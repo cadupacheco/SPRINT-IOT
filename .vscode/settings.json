@@ -1,0 +1,8 @@
+{
+    "python.defaultInterpreterPath": "../venv-mottu/Scripts/python.exe",
+    "python.analysis.extraPaths": [
+        "../venv-mottu/Lib/site-packages",
+        "./src"
+    ],
+    "python.terminal.activateEnvironment": true
+}
