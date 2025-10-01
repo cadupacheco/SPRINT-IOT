@@ -172,6 +172,45 @@ mottu-vision-sistema/
 | [João Pedro Amorim Brito Virgens] | RM 559213 |
 
 
+## 🔗 Integração com API .NET Enterprise
+
+### **Conexão com Sistemas Corporativos**
+
+O sistema foi expandido para integrar com APIs .NET corporativas, permitindo sincronização com bancos de dados empresariais Oracle e sistemas de gestão existentes.
+
+### **Funcionalidades de Integração**
+
+- **Sincronização automática** de detecções com banco Oracle
+- **Gestão completa** de motos, pátios e modelos via REST API
+- **Dashboard unificado** combinando visão computacional + dados corporativos
+- **Conectividade enterprise** com sistemas .NET Core/ASP.NET
+
+### **Nova Arquitetura Integrada**
+
+```text
+SISTEMA UNIFICADO MOTTU
+├── Visão Computacional (YOLOv8)
+├── Simulação IoT (MQTT)
+├── API Integration (HTTP/REST)
+├── Database Oracle (Enterprise)
+└── Dashboard Integrado (Streamlit + .NET API)
+```
+
+### **Uso do Sistema Integrado**
+
+```bash
+# Dashboard com integração completa
+python main.py --dashboard-integrated
+
+# Acesso unificado em: http://localhost:8501
+```
+
+### **Módulos de Integração**
+
+- `src/integration/dotnet_api_client.py` - Cliente HTTP para API .NET
+- `src/dashboard/integrated_dashboard.py` - Interface unificada
+- Sincronização automática de dados entre sistemas
+
 ---
 
 💡 **IdeaTec Tecnologia - Transformando desafios operacionais em soluções tecnológicas inovadoras para empresas líderes como a Mottu.**

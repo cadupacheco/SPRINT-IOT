@@ -1,0 +1,17 @@
+{
+  "sistema_summary": {
+    "projeto": "IdeaTec Tecnologia - Mottu Vision System",
+    "empresa": "IdeaTec Tecnologia",
+    "cliente": "Mottu - Sistema de Mapeamento Inteligente",
+    "total_frames_processed": 5,
+    "total_motorcycles_detected": 19,
+    "unique_models_identified": 4,
+    "patio_zones_coverage": 6,
+    "average_confidence": 0.84,
+    "max_confidence": 0.95,
+    "average_fps": 19.1,
+    "detection_accuracy_estimate": "Excelente (>80%)"
+  },
+  "mottu_insights": {
+    "models_detected": {
+      "Mottu Classic": 

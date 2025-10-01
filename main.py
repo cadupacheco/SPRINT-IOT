@@ -21,6 +21,7 @@ def main():
         epilog="""
 IDEATEC TECNOLOGIA - EXEMPLOS DE USO:
   python main.py --dashboard                    # Sistema completo (RECOMENDADO)
+  python main.py --dashboard-integrated         # Dashboard integrado com API .NET
   python main.py --demo-image patio.jpg         # Testar detecção em imagem
   python main.py --demo-video patio.mp4         # Processar vídeo do pátio
   python main.py --demo-iot                     # Simular sensores IoT Mottu
@@ -28,11 +29,14 @@ IDEATEC TECNOLOGIA - EXEMPLOS DE USO:
 
 EMPRESA: IdeaTec Tecnologia - Especialistas em Visão Computacional
 CLIENTE: Mottu - Sistema de Mapeamento Inteligente do Pátio
+INTEGRAÇÃO: API .NET Sprint para persistência robusta
         """
     )
     
     parser.add_argument('--dashboard', action='store_true',
                        help='Iniciar dashboard completo do sistema')
+    parser.add_argument('--dashboard-integrated', action='store_true',
+                       help='Iniciar dashboard integrado com API .NET')
     parser.add_argument('--demo-image', type=str,
                        help='Testar detecção em imagem específica')
     parser.add_argument('--demo-video', type=str,
@@ -58,6 +62,13 @@ CLIENTE: Mottu - Sistema de Mapeamento Inteligente do Pátio
         print("📍 Acesse: http://localhost:8501")
         print("💡 Sistema pronto para demonstração operacional!")
         os.system("streamlit run src/dashboard/mottu_app.py")
+        
+    elif args.dashboard_integrated:
+        print("🚀 Iniciando dashboard integrado IdeaTec + API .NET...")
+        print("📍 Acesse: http://localhost:8501")
+        print("🔗 Integração com API .NET Sprint ativa!")
+        print("💡 Sistema completo pronto para produção!")
+        os.system("streamlit run src/dashboard/integrated_dashboard.py")
         
     elif args.demo_image:
         print(f"🖼️ DEMO IdeaTec: Detecção de motos - {args.demo_image}")

@@ -11,4 +11,18 @@ requests==2.31.0
 paho-mqtt==1.6.1
 python-dotenv==1.0.0
 jupyter==1.0.0
+ultralytics>=8.0.0
+opencv-python
+paho-mqtt
+fastapi
+uvicorn[standard]
+sqlalchemy
+alembic
+streamlit
+plotly
+pandas
+python-multipart
+# Integração API .NET
+requests>=2.31.0
+aiohttp>=3.8.0
 
