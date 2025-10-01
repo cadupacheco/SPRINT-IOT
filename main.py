@@ -184,8 +184,17 @@ INTEGRAÇÃO: API .NET Sprint para persistência robusta
         
         # Salvar relatório
         import json
+        # Converter numpy int64 para int padrão
+        def convert_numpy_types(obj):
+            if hasattr(obj, 'item'):
+                return obj.item()
+            return obj
+        
+        # Serializar com conversão de tipos numpy
+        report_json = json.loads(json.dumps(report, default=convert_numpy_types))
+        
         with open('ideatec_sistema_report.json', 'w', encoding='utf-8') as f:
-            json.dump(report, f, indent=2, ensure_ascii=False)
+            json.dump(report_json, f, indent=2, ensure_ascii=False)
         print(f"💾 Relatório IdeaTec salvo em: ideatec_sistema_report.json")
         
     else:
