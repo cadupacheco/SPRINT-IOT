@@ -4,28 +4,28 @@
     "empresa": "IdeaTec Tecnologia",
     "cliente": "Mottu - Sistema de Mapeamento Inteligente",
     "total_frames_processed": 5,
-    "total_motorcycles_detected": 19,
+    "total_motorcycles_detected": 17,
     "unique_models_identified": 4,
     "patio_zones_coverage": 6,
-    "average_confidence": 0.73,
-    "max_confidence": 0.93,
-    "average_fps": 18.0,
+    "average_confidence": 0.78,
+    "max_confidence": 0.94,
+    "average_fps": 19.6,
     "detection_accuracy_estimate": "Boa (60-80%)"
   },
   "mottu_insights": {
     "models_detected": {
-      "Mottu Classic": 5,
-      "Mottu Delivery": 6,
+      "Mottu Classic": 7,
+      "Mottu Delivery": 4,
       "Mottu Sport 110i": 2,
-      "Mottu Urban": 1
+      "Mottu Urban": 3
     },
     "zones_usage": [
-      "ZONA_B_NORTE",
-      "ZONA_C_SUL",
-      "ZONA_B_SUL",
       "ZONA_A_SUL",
       "ZONA_A_NORTE",
-      "ZONA_C_NORTE"
+      "ZONA_C_NORTE",
+      "ZONA_B_NORTE",
+      "ZONA_C_SUL",
+      "ZONA_B_SUL"
     ],
     "performance_rating": "★★★★☆ Muito Bom"
   },
@@ -40,5 +40,5 @@
     "confidence_threshold": 0.4,
     "processing_framework": "OpenCV + Ultralytics"
   },
-  "generated_at": "2025-10-01T19:26:20.817836"
+  "generated_at": "2025-10-01T19:52:34.975165"
 }
