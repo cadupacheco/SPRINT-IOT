@@ -71,7 +71,7 @@ def main():
     st.sidebar.markdown("**Integração com API .NET Sprint**")
     
     # Configurações da API .NET
-    api_url = st.sidebar.text_input("🔗 URL da API .NET", value="http://localhost:5000/api")
+    api_url = st.sidebar.text_input("🔗 URL da API .NET", value="http://localhost:5221/api")
     confidence_threshold = st.sidebar.slider("🎯 Confiança Mínima", 0.1, 1.0, 0.4, 0.1)
     sync_enabled = st.sidebar.checkbox("🔄 Sincronização Automática", value=True)
     
@@ -186,6 +186,351 @@ def main():
             st.subheader("⚙️ Configurações Sync")
             auto_sync = st.checkbox("🔄 Sync Automático", value=sync_enabled)
             patio_id = st.number_input("🏭 ID do Pátio", min_value=1, value=1)
+    
+    # TAB 2: Processamento de Vídeo
+    with tab2:
+        st.header("🎥 Processamento de Vídeo - IdeaTec Vision")
+        
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            st.subheader("📁 Upload de Vídeo")
+            
+            uploaded_video = st.file_uploader(
+                "🎥 Selecione vídeo do pátio Mottu",
+                type=['mp4', 'avi', 'mov', 'mkv'],
+                help="Sistema IdeaTec processará detecções em tempo real"
+            )
+            
+            if uploaded_video is not None:
+                # Salvar vídeo temporariamente
+                video_path = f"temp_{uploaded_video.name}"
+                with open(video_path, "wb") as f:
+                    f.write(uploaded_video.getbuffer())
+                
+                st.success(f"✅ Vídeo carregado: {uploaded_video.name}")
+                
+                # Configurações de processamento
+                col3, col4 = st.columns(2)
+                with col3:
+                    max_frames = st.slider("🎞️ Máximo de frames", 50, 500, 200)
+                with col4:
+                    show_preview = st.checkbox("👁️ Preview em tempo real", value=True)
+                
+                if st.button("🚀 Processar Vídeo", type="primary"):
+                    with st.spinner("⚙️ IdeaTec processando vídeo..."):
+                        try:
+                            # Inicializar processador
+                            video_processor = MottuVideoProcessor(detector)
+                            
+                            # Processar vídeo
+                            output_path = f"output_{uploaded_video.name}"
+                            result = video_processor.process_patio_video(
+                                video_path, 
+                                output_path, 
+                                max_frames=max_frames
+                            )
+                            
+                            if result['success']:
+                                st.success("✅ Processamento concluído!")
+                                
+                                # Métricas do processamento
+                                col5, col6, col7, col8 = st.columns(4)
+                                with col5:
+                                    st.metric("🎞️ Frames", result['total_frames'])
+                                with col6:
+                                    st.metric("🏍️ Motos Detectadas", result['total_motorcycles'])
+                                with col7:
+                                    st.metric("⚡ FPS Médio", f"{result['avg_fps']:.1f}")
+                                with col8:
+                                    st.metric("⏱️ Tempo", f"{result['processing_time']:.1f}s")
+                                
+                                # Oferecer download do vídeo processado
+                                if os.path.exists(output_path):
+                                    with open(output_path, "rb") as file:
+                                        st.download_button(
+                                            label="📥 Download Vídeo Processado",
+                                            data=file.read(),
+                                            file_name=output_path,
+                                            mime="video/mp4"
+                                        )
+                                
+                                # Mostrar estatísticas detalhadas
+                                if 'frame_stats' in result:
+                                    st.subheader("📊 Estatísticas por Frame")
+                                    df_stats = pd.DataFrame(result['frame_stats'])
+                                    
+                                    # Gráfico de detecções por frame
+                                    fig = px.line(
+                                        df_stats, 
+                                        x='frame_number', 
+                                        y='motorcycles_count',
+                                        title='Detecções por Frame'
+                                    )
+                                    st.plotly_chart(fig, use_container_width=True)
+                            
+                            else:
+                                st.error(f"❌ Erro: {result.get('error', 'Erro desconhecido')}")
+                                
+                        except Exception as e:
+                            st.error(f"❌ Erro no processamento: {str(e)}")
+                        
+                        finally:
+                            # Limpar arquivo temporário
+                            if os.path.exists(video_path):
+                                os.remove(video_path)
+            
+            # Mostrar vídeos existentes
+            st.subheader("📁 Vídeos Processados Existentes")
+            
+            existing_videos = [f for f in os.listdir('.') if f.endswith('.mp4') and f.startswith('output_')]
+            
+            if existing_videos:
+                selected_video = st.selectbox("🎥 Selecionar vídeo processado", existing_videos)
+                
+                if selected_video:
+                    st.video(selected_video)
+                    
+                    # Informações do arquivo
+                    file_size = os.path.getsize(selected_video) / (1024*1024)  # MB
+                    st.info(f"📁 Arquivo: {selected_video} | 💾 Tamanho: {file_size:.1f} MB")
+            else:
+                st.info("📋 Nenhum vídeo processado encontrado")
+        
+        with col2:
+            st.subheader("⚙️ Configurações de Vídeo")
+            
+            st.markdown("**🎯 Detecção:**")
+            st.write(f"Confiança mínima: {confidence_threshold}")
+            st.write("Classes: Motos, Carros, Bicicletas")
+            
+            st.markdown("**📊 Métricas:**")
+            st.write("- Contagem por frame")
+            st.write("- Rastreamento de IDs")  
+            st.write("- Zonas do pátio")
+            st.write("- Performance FPS")
+            
+            st.markdown("**💾 Saída:**")
+            st.write("- Vídeo anotado (MP4)")
+            st.write("- Estatísticas JSON")
+            st.write("- Relatório detalhado")
+            
+            if st.button("🗑️ Limpar Vídeos Temporários"):
+                temp_files = [f for f in os.listdir('.') if f.startswith('temp_') and f.endswith(('.mp4', '.avi', '.mov'))]
+                for file in temp_files:
+                    try:
+                        os.remove(file)
+                    except:
+                        pass
+                st.success(f"🗑️ {len(temp_files)} arquivos temporários removidos")
+    
+    # TAB 3: Simulação IoT
+    with tab3:
+        st.header("📡 Simulação IoT - Frota Virtual Mottu")
+        
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            st.subheader("🚀 Controle da Simulação")
+            
+            # Controles da simulação
+            col3, col4, col5 = st.columns(3)
+            
+            with col3:
+                if st.button("▶️ Iniciar Simulação", type="primary"):
+                    if not iot_simulator.is_running():
+                        iot_simulator.start_simulation()
+                        st.success("✅ Simulação IoT iniciada!")
+                    else:
+                        st.warning("⚠️ Simulação já está rodando")
+            
+            with col4:
+                if st.button("⏸️ Pausar Simulação"):
+                    if iot_simulator.is_running():
+                        iot_simulator.stop_simulation()
+                        st.success("⏸️ Simulação pausada")
+                    else:
+                        st.info("ℹ️ Simulação não está rodando")
+            
+            with col5:
+                if st.button("🔄 Resetar Simulação"):
+                    iot_simulator.reset_simulation()
+                    st.success("🔄 Simulação resetada")
+            
+            # Status da simulação
+            simulation_status = iot_simulator.get_simulation_status()
+            
+            if simulation_status['running']:
+                st.success("🟢 Simulação IoT ATIVA")
+            else:
+                st.error("🔴 Simulação IoT INATIVA")
+            
+            # Métricas em tempo real
+            st.subheader("📊 Métricas da Frota Virtual")
+            
+            col6, col7, col8, col9 = st.columns(4)
+            
+            with col6:
+                st.metric(
+                    "🏍️ Motos Ativas", 
+                    simulation_status.get('active_motorcycles', 0),
+                    delta=simulation_status.get('delta_motorcycles', 0)
+                )
+            
+            with col7:
+                st.metric(
+                    "📡 Mensagens MQTT", 
+                    simulation_status.get('total_messages', 0),
+                    delta=simulation_status.get('delta_messages', 0)
+                )
+            
+            with col8:
+                avg_battery = simulation_status.get('avg_battery', 0)
+                st.metric(
+                    "🔋 Bateria Média", 
+                    f"{avg_battery:.1f}%",
+                    delta=f"{simulation_status.get('delta_battery', 0):.1f}%"
+                )
+            
+            with col9:
+                uptime = simulation_status.get('uptime_seconds', 0)
+                uptime_str = f"{uptime//3600:02d}:{(uptime%3600)//60:02d}:{uptime%60:02d}"
+                st.metric("⏱️ Tempo Ativo", uptime_str)
+            
+            # Dados em tempo real das motos
+            if simulation_status['running']:
+                st.subheader("🏍️ Status da Frota em Tempo Real")
+                
+                motos_data = iot_simulator.get_motorcycles_data()
+                
+                if motos_data:
+                    # Converter para DataFrame
+                    df_motos = pd.DataFrame(motos_data)
+                    
+                    # Tabela com dados das motos
+                    st.dataframe(
+                        df_motos[['moto_id', 'model', 'battery_level', 'fuel_level', 'status', 'zone']],
+                        use_container_width=True
+                    )
+                    
+                    # Gráficos
+                    col10, col11 = st.columns(2)
+                    
+                    with col10:
+                        # Gráfico de bateria
+                        fig_battery = px.bar(
+                            df_motos, 
+                            x='moto_id', 
+                            y='battery_level',
+                            title='🔋 Níveis de Bateria',
+                            color='battery_level',
+                            color_continuous_scale='RdYlGn'
+                        )
+                        fig_battery.update_layout(height=300)
+                        st.plotly_chart(fig_battery, use_container_width=True)
+                    
+                    with col11:
+                        # Gráfico de combustível
+                        fig_fuel = px.bar(
+                            df_motos, 
+                            x='moto_id', 
+                            y='fuel_level',
+                            title='⛽ Níveis de Combustível',
+                            color='fuel_level',
+                            color_continuous_scale='Blues'
+                        )
+                        fig_fuel.update_layout(height=300)
+                        st.plotly_chart(fig_fuel, use_container_width=True)
+                    
+                    # Mapa de distribuição por zona
+                    zone_counts = df_motos['zone'].value_counts()
+                    if not zone_counts.empty:
+                        fig_zones = px.pie(
+                            values=zone_counts.values,
+                            names=zone_counts.index,
+                            title='🗺️ Distribuição por Zona do Pátio'
+                        )
+                        st.plotly_chart(fig_zones, use_container_width=True)
+                
+                # Auto-refresh
+                if st.checkbox("🔄 Auto-refresh (5s)", value=False):
+                    time.sleep(5)
+                    st.rerun()
+            
+            else:
+                st.info("💡 Inicie a simulação para ver dados em tempo real")
+                
+                # Mostrar dados simulados como exemplo
+                st.subheader("📋 Exemplo de Dados IoT")
+                
+                example_data = [
+                    {
+                        'moto_id': f'MOTTU_{i:03d}',
+                        'model': ['Sport 110i', 'Urban', 'Delivery', 'Classic'][i % 4],
+                        'battery_level': 85 + (i % 15),
+                        'fuel_level': 70 + (i % 30),
+                        'status': ['active', 'charging', 'maintenance'][i % 3],
+                        'zone': f'Zona {chr(65 + i % 6)}'
+                    }
+                    for i in range(15)
+                ]
+                
+                df_example = pd.DataFrame(example_data)
+                st.dataframe(df_example, use_container_width=True)
+        
+        with col2:
+            st.subheader("⚙️ Configurações IoT")
+            
+            # Configurações da simulação
+            st.markdown("**📡 Protocolo MQTT:**")
+            mqtt_broker = st.text_input("🌐 Broker", value="localhost")
+            mqtt_port = st.number_input("🔌 Porta", value=1883, min_value=1, max_value=65535)
+            mqtt_topic = st.text_input("📝 Tópico", value="mottu/iot/data")
+            
+            st.markdown("**🏍️ Frota Virtual:**")
+            num_motos = st.slider("Número de motos", 5, 25, 15)
+            update_interval = st.slider("Intervalo (segundos)", 1, 10, 3)
+            
+            if st.button("💾 Salvar Configurações"):
+                # Aplicar configurações ao simulador
+                iot_simulator.configure_mqtt(mqtt_broker, mqtt_port, mqtt_topic)
+                iot_simulator.set_fleet_size(num_motos)
+                iot_simulator.set_update_interval(update_interval)
+                st.success("✅ Configurações salvas!")
+            
+            st.markdown("---")
+            st.markdown("**📊 Dados Simulados:**")
+            st.write("• GPS (lat/lon)")
+            st.write("• Bateria (0-100%)")
+            st.write("• Combustível (0-100%)")
+            st.write("• Velocidade (km/h)")
+            st.write("• Status operacional")
+            st.write("• Odômetro (km)")
+            st.write("• Zona do pátio")
+            
+            st.markdown("**🔄 Funcionalidades:**")
+            st.write("• Simulação em tempo real")
+            st.write("• Protocolo MQTT padrão")
+            st.write("• Dados JSON estruturados")
+            st.write("• Múltiplos sensores")
+            st.write("• Auto-refresh dashboard")
+            
+            # Log de atividades
+            st.subheader("📋 Log de Atividades")
+            
+            log_entries = iot_simulator.get_recent_logs(limit=10)
+            
+            if log_entries:
+                for entry in log_entries[-5:]:  # Últimas 5 entradas
+                    timestamp = entry.get('timestamp', 'N/A')
+                    message = entry.get('message', 'N/A')
+                    st.text(f"{timestamp}: {message}")
+            else:
+                st.text("Nenhuma atividade recente")
+            
+            if st.button("🗑️ Limpar Logs"):
+                iot_simulator.clear_logs()
+                st.success("🗑️ Logs limpos")
     
     # TAB 4: Gestão API .NET
     with tab4:

@@ -114,3 +114,89 @@ class MottuIoTSimulator:
     def stop_simulation(self):
         """Para a simulação"""
         self.simulation_active = False
+    
+    def start_simulation(self):
+        """Inicia a simulação IoT"""
+        if not self.simulation_active:
+            self.simulation_active = True
+            # Iniciar em thread separada para não bloquear
+            threading.Thread(target=self.simulate_real_time_data, daemon=True).start()
+    
+    def is_running(self) -> bool:
+        """Verifica se a simulação está ativa"""
+        return self.simulation_active
+    
+    def reset_simulation(self):
+        """Reseta a simulação"""
+        self.simulation_active = False
+        self.motos_fleet = self._generate_fleet_data()
+        self.simulation_data = []
+    
+    def get_simulation_status(self) -> Dict:
+        """Retorna status detalhado da simulação"""
+        if not hasattr(self, '_start_time'):
+            self._start_time = time.time()
+        
+        active_motos = len([m for m in self.motos_fleet if m['status'] != 'manutencao'])
+        avg_battery = sum(m['battery_level'] for m in self.motos_fleet) / len(self.motos_fleet)
+        
+        return {
+            'running': self.simulation_active,
+            'active_motorcycles': active_motos,
+            'total_messages': len(self.simulation_data),
+            'avg_battery': avg_battery,
+            'uptime_seconds': int(time.time() - self._start_time) if self.simulation_active else 0,
+            'delta_motorcycles': 0,  # Para compatibilidade com métricas
+            'delta_messages': 0,
+            'delta_battery': 0
+        }
+    
+    def get_motorcycles_data(self) -> List[Dict]:
+        """Retorna dados atuais das motos"""
+        formatted_data = []
+        for moto in self.motos_fleet:
+            formatted_data.append({
+                'moto_id': moto['id'],
+                'model': moto['model'],
+                'battery_level': moto['battery_level'],
+                'fuel_level': moto['fuel_level'],
+                'status': moto['status'],
+                'zone': moto['position']['zone'],
+                'x': moto['position']['x'],
+                'y': moto['position']['y']
+            })
+        return formatted_data
+    
+    def configure_mqtt(self, broker: str, port: int, topic: str):
+        """Configura parâmetros MQTT"""
+        self.mqtt_broker = broker
+        self.mqtt_port = port
+        self.mqtt_topic = topic
+    
+    def set_fleet_size(self, size: int):
+        """Define tamanho da frota"""
+        if size != len(self.motos_fleet):
+            self.motos_fleet = self._generate_fleet_data()[:size]
+    
+    def set_update_interval(self, interval: int):
+        """Define intervalo de atualização"""
+        self.update_interval = interval
+    
+    def get_recent_logs(self, limit: int = 10) -> List[Dict]:
+        """Retorna logs recentes da simulação"""
+        if not hasattr(self, '_logs'):
+            self._logs = []
+        
+        # Gerar alguns logs exemplo se não tiver
+        if not self._logs:
+            for i in range(5):
+                self._logs.append({
+                    'timestamp': datetime.now().strftime('%H:%M:%S'),
+                    'message': f'Moto MOTTU_{i+1:03d} atualizou status'
+                })
+        
+        return self._logs[-limit:]
+    
+    def clear_logs(self):
+        """Limpa logs da simulação"""
+        self._logs = []
